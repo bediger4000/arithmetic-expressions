@@ -29,11 +29,27 @@ func NewOpNode(op lexer.TokenType) *Node {
 
 // NewIdentNode creates leaf nodes of a parse tree, which should all be
 // lexer.CONSTANT identifier nodes.
-func NewConstantNode(identifier string) *Node {
+func NewConstantNode(stringrepresentation string) *Node {
 	var n Node
 	n.Op = lexer.CONSTANT
-	n.Const, _ = strconv.Atoi(identifier)
+	n.Const, _ = strconv.Atoi(stringrepresentation)
 	return &n
+}
+
+func (p *Node) Eval() *Node {
+	switch p.Op {
+	case lexer.CONSTANT:
+		return p
+	case lexer.PLUS:
+		return &Node{ Const:p.Left.Eval().Const + p.Right.Eval().Const}
+	case lexer.MINUS:
+		return &Node{ Const:p.Left.Eval().Const - p.Right.Eval().Const}
+	case lexer.DIVIDE:
+		return &Node{ Const:p.Left.Eval().Const / p.Right.Eval().Const}
+	case lexer.MULT:
+		return &Node{ Const:p.Left.Eval().Const * p.Right.Eval().Const}
+	}
+	return nil
 }
 
 // Print puts a human-readable, nicely formatted string representation
