@@ -7,8 +7,17 @@ import (
 	"os"
 )
 
+/*
+    SUBTRACTION -> ADDITION { "-" ADDITION }
+    ADDITION    -> DIVISION { "+" DIVISION }
+    DIVISION    -> MULTIPLICATION { "/" MULTIPLICATION }
+    TERM -> FACTOR { "*" FACTOR }
+    FACTOR -> constant | "(" SUBTRACTION ")"
+*/
+
+
 // Parser instances get used to do a parse of a single
-// logical expression. Since instances of Lexer have a
+// arithmetic expression. Since instances of Lexer have a
 // io.Reader or a string in them, Parser instances have
 // no idea what they're parsing from.
 type Parser struct {
@@ -22,10 +31,10 @@ var nextOp [9]lexer.TokenType
 func New(lxr *lexer.Lexer) *Parser {
 	var parser Parser
 	parser.lexer = lxr
-	nextOp[int(lexer.EQUIV)] = lexer.IMPLIES
-	nextOp[int(lexer.IMPLIES)] = lexer.OR
-	nextOp[int(lexer.OR)] = lexer.AND
-	nextOp[int(lexer.AND)] = lexer.EQUIV
+	nextOp[int(lexer.MINUS)] = lexer.PLUS
+	nextOp[int(lexer.PLUS)] = lexer.DIVIDE
+	nextOp[int(lexer.DIVIDE)] = lexer.MULT
+	nextOp[int(lexer.MULT)] = lexer.MINUS
 	return &parser
 }
 
@@ -34,7 +43,7 @@ func New(lxr *lexer.Lexer) *Parser {
 // whatever source of text the Lexer instance
 // has in it.
 func (p *Parser) Parse() *node.Node {
-	root := p.parseProduction(lexer.EQUIV)
+	root := p.parseProduction(lexer.MINUS)
 	if root != nil {
 		q := p.expect(lexer.EOL)
 		if !q {
@@ -55,7 +64,7 @@ func (p *Parser) Parse() *node.Node {
 func (p *Parser) parseProduction(op lexer.TokenType) *node.Node {
 
 	nextProduction := p.parseProduction
-	if op == lexer.AND {
+	if op == lexer.MULT {
 		nextProduction = p.parseFactor
 	}
 
@@ -79,9 +88,9 @@ func (p *Parser) parseFactor(op lexer.TokenType) *node.Node {
 	token, typ := p.lexer.Next()
 
 	switch typ {
-	case lexer.IDENT:
+	case lexer.CONSTANT:
 		p.lexer.Consume()
-		n = node.NewIdentNode(token)
+		n = node.NewConstantNode(token)
 	case lexer.LPAREN:
 		p.lexer.Consume()
 		n = p.parseProduction(op)
@@ -91,10 +100,6 @@ func (p *Parser) parseFactor(op lexer.TokenType) *node.Node {
 				n = nil
 			}
 		}
-	case lexer.NOT:
-		p.lexer.Consume()
-		n = node.NewOpNode(lexer.NOT)
-		n.Left = p.parseFactor(op)
 	default:
 		fmt.Fprintf(os.Stderr, "Found token %q, type %s (%d) instead of IDENT|LPAREN|NOT\n", token, lexer.TokenName(typ), typ)
 		n = nil

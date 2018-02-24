@@ -28,16 +28,16 @@ type TokenType int
 
 // All the lexemes that this program knows about.
 const (
-	NOT     TokenType = iota
-	AND     TokenType = iota
-	OR      TokenType = iota
-	IMPLIES TokenType = iota
-	EQUIV   TokenType = iota
-	IDENT   TokenType = iota
-	LPAREN  TokenType = iota
-	RPAREN  TokenType = iota
-	EOL     TokenType = iota
-	EOF     TokenType = iota
+	JUNK     TokenType = iota
+	MINUS    TokenType = iota
+	PLUS     TokenType = iota
+	DIVIDE   TokenType = iota
+	MULT     TokenType = iota
+	CONSTANT TokenType = iota
+	LPAREN   TokenType = iota
+	RPAREN   TokenType = iota
+	EOL      TokenType = iota
+	EOF      TokenType = iota
 )
 
 // NewFromFile creates a lexer that reads text from an io.Reader
@@ -114,24 +114,22 @@ func (p *Lexer) nextToken() (string, TokenType) {
 	// through bufio.Scanner
 	var typ TokenType
 	switch token {
-	case "~":
-		typ = NOT
+	case "-":
+		typ = MINUS
 	case "(":
 		typ = LPAREN
 	case ")":
 		typ = RPAREN
-	case "&":
-		typ = AND
-	case "|":
-		typ = OR
-	case ">":
-		typ = IMPLIES
-	case "=":
-		typ = EQUIV
+	case "+":
+		typ = PLUS
+	case "*":
+		typ = MULT
+	case "/":
+		typ = DIVIDE
 	case "\n":
 		typ = EOL
 	default:
-		typ = IDENT
+		typ = CONSTANT
 	}
 
 	return token, typ
@@ -146,18 +144,16 @@ func TokenName(t TokenType) string {
 		r = "LPAREN"
 	case RPAREN:
 		r = "RPAREN"
-	case NOT:
-		r = "NOT"
-	case AND:
-		r = "AND"
-	case OR:
-		r = "OR"
-	case IMPLIES:
-		r = "IMPLIES"
-	case EQUIV:
-		r = "EQUIV"
-	case IDENT:
-		r = "IDENT"
+	case MINUS:
+		r = "MINUS"
+	case PLUS:
+		r = "PLUS"
+	case MULT:
+		r = "MULT"
+	case DIVIDE:
+		r = "DIVIDE"
+	case CONSTANT:
+		r = "CONSTANT"
 	case EOL:
 		r = "EOL"
 	case EOF:
@@ -176,7 +172,7 @@ func plSplitter(data []byte, atEOF bool) (advance int, token []byte, err error) 
 		end := advance + w
 
 		switch c {
-		case '(', ')', '&', '~', '|', '=', '>':
+		case '(', ')', '+', '-', '/', '*':
 			if len(token) == 0 {
 				token = append(token, data[advance:end]...)
 				advance = end
@@ -194,7 +190,7 @@ func plSplitter(data []byte, atEOF bool) (advance int, token []byte, err error) 
 			}
 			foundToken = true
 		default:
-			if c == '_' || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9') {
+			if '0' <= c && c <= '9' {
 				token = append(token, data[advance:end]...)
 				advance = end
 			} else {
@@ -204,14 +200,4 @@ func plSplitter(data []byte, atEOF bool) (advance int, token []byte, err error) 
 		}
 	}
 	return
-}
-
-// BinaryOperator returns true if you pass it one of the
-// binary infix propositional logic connectives.
-func BinaryOperator(t TokenType) bool {
-	switch t {
-	case AND, OR, IMPLIES, EQUIV:
-		return true
-	}
-	return false
 }

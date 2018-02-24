@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"lexer"
+	"strconv"
 )
 
 // Node has all elements exported, everything reaches inside instances
@@ -15,25 +16,23 @@ import (
 // elements would cost me gross ol' getter and setter boilerplate.
 type Node struct {
 	Op    lexer.TokenType
-	Ident string
+	Const int
 	Left  *Node
 	Right *Node
 }
 
 // NewOpNode creates interior nodes of a parse tree, which will
-// all have a &, ~, |, >, = operator associated.
+// all have a +, -, *, / operator associated
 func NewOpNode(op lexer.TokenType) *Node {
-	var n Node
-	n.Op = op
-	return &n
+	return &Node{Op:op}
 }
 
 // NewIdentNode creates leaf nodes of a parse tree, which should all be
-// lexer.IDENT identifier nodes.
-func NewIdentNode(identifier string) *Node {
+// lexer.CONSTANT identifier nodes.
+func NewConstantNode(identifier string) *Node {
 	var n Node
-	n.Op = lexer.IDENT
-	n.Ident = identifier
+	n.Op = lexer.CONSTANT
+	n.Const, _ = strconv.Atoi(identifier)
 	return &n
 }
 
@@ -43,12 +42,9 @@ func NewIdentNode(identifier string) *Node {
 // parenthesization, and the "~" (not) operator being a prefix.
 func (p *Node) Print(w io.Writer) {
 
-	if lexer.NOT == p.Op {
-		fmt.Fprintf(w, "~")
-	}
 	if p.Left != nil {
 		printParen := false
-		if p.Left.Op != lexer.IDENT && p.Left.Op != lexer.NOT {
+		if p.Left.Op != lexer.CONSTANT {
 			fmt.Fprintf(w, "(")
 			printParen = true
 		}
@@ -60,26 +56,28 @@ func (p *Node) Print(w io.Writer) {
 
 	var oper rune
 	switch p.Op {
-	case lexer.IMPLIES:
-		oper = '>'
-	case lexer.AND:
-		oper = '&'
-	case lexer.OR:
-		oper = '|'
-	case lexer.EQUIV:
-		oper = '='
+	case lexer.MULT:
+		oper = '*'
+	case lexer.DIVIDE:
+		oper = '/'
+	case lexer.PLUS:
+		oper = '+'
+	case lexer.MINUS:
+		oper = '-'
+	case lexer.CONSTANT:
+		oper = 0
 	}
 	if oper != 0 {
 		fmt.Fprintf(w, " %c ", oper)
 	}
 
-	if p.Op == lexer.IDENT {
-		fmt.Fprintf(w, "%s", p.Ident)
+	if p.Op == lexer.CONSTANT {
+		fmt.Fprintf(w, "%d", p.Const)
 	}
 
 	if p.Right != nil {
 		printParen := false
-		if p.Right.Op != lexer.IDENT && p.Right.Op != lexer.NOT {
+		if p.Right.Op != lexer.CONSTANT {
 			fmt.Fprintf(w, "(")
 			printParen = true
 		}
@@ -98,23 +96,25 @@ func ExpressionToString(root *Node) string {
 	return sb.String()
 }
 
+func (p *Node) String() string {
+	return ExpressionToString(p)
+}
+
 func (p *Node) graphNode(w io.Writer) {
 
 	var label string
 
 	switch p.Op {
-	case lexer.IDENT:
-		label = p.Ident
-	case lexer.IMPLIES:
-		label = ">"
-	case lexer.AND:
-		label = "&"
-	case lexer.OR:
-		label = "|"
-	case lexer.EQUIV:
-		label = "="
-	case lexer.NOT:
-		label = "~"
+	case lexer.CONSTANT:
+		label = fmt.Sprintf("%d", p.Const)
+	case lexer.MINUS:
+		label = "-"
+	case lexer.PLUS:
+		label = "+"
+	case lexer.DIVIDE:
+		label = "/"
+	case lexer.MULT:
+		label = "*"
 	}
 
 	fmt.Fprintf(w, "n%p [label=\"%s\"];\n", p, label)

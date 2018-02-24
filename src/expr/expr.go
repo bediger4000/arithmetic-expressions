@@ -15,7 +15,6 @@ func main() {
 	psr := parser.New(lxr)
 	xpr := psr.Parse()
 
-	fmt.Printf("%T\n", xpr)
-	xpr.Print(os.Stdout)
+	fmt.Printf("%q\n", xpr)
 }
 
