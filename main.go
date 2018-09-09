@@ -1,16 +1,16 @@
 package main
 
 import (
+	"arithmetic/lexer"
+	"arithmetic/parser"
 	"bytes"
 	"fmt"
 	"os"
-	"lexer"
-	"parser"
 )
+
 func main() {
 
 	graphVizOutput := false
-
 	str := os.Args[1]
 
 	if str == "-g" {
@@ -18,7 +18,7 @@ func main() {
 		str = os.Args[2]
 	}
 
-	expr := bytes.NewBufferString(str+"\n")
+	expr := bytes.NewBufferString(str + "\n")
 	lxr := lexer.NewFromFile(expr)
 	psr := parser.New(lxr)
 	xpr := psr.Parse()
@@ -28,5 +28,6 @@ func main() {
 	} else {
 		fmt.Printf("%q\n", xpr)
 	}
-}
 
+	fmt.Printf("/* %v */\n", xpr.Eval().Const)
+}
