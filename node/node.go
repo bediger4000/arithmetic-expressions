@@ -4,10 +4,10 @@ package node
 // and associated utility functions and methods.
 
 import (
+	"arithmetic/lexer"
 	"bytes"
 	"fmt"
 	"io"
-	"lexer"
 	"strconv"
 )
 
@@ -24,7 +24,7 @@ type Node struct {
 // NewOpNode creates interior nodes of a parse tree, which will
 // all have a +, -, *, / operator associated
 func NewOpNode(op lexer.TokenType) *Node {
-	return &Node{Op:op}
+	return &Node{Op: op}
 }
 
 // NewIdentNode creates leaf nodes of a parse tree, which should all be
@@ -41,13 +41,13 @@ func (p *Node) Eval() *Node {
 	case lexer.CONSTANT:
 		return p
 	case lexer.PLUS:
-		return &Node{ Const:p.Left.Eval().Const + p.Right.Eval().Const}
+		return &Node{Const: p.Left.Eval().Const + p.Right.Eval().Const}
 	case lexer.MINUS:
-		return &Node{ Const:p.Left.Eval().Const - p.Right.Eval().Const}
+		return &Node{Const: p.Left.Eval().Const - p.Right.Eval().Const}
 	case lexer.DIVIDE:
-		return &Node{ Const:p.Left.Eval().Const / p.Right.Eval().Const}
+		return &Node{Const: p.Left.Eval().Const / p.Right.Eval().Const}
 	case lexer.MULT:
-		return &Node{ Const:p.Left.Eval().Const * p.Right.Eval().Const}
+		return &Node{Const: p.Left.Eval().Const * p.Right.Eval().Const}
 	}
 	return nil
 }

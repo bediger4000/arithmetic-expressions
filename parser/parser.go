@@ -1,20 +1,19 @@
 package parser
 
 import (
+	"arithmetic/lexer"
+	"arithmetic/node"
 	"fmt"
-	"lexer"
-	"node"
 	"os"
 )
 
 /*
-    SUBTRACTION -> ADDITION { "-" ADDITION }
-    ADDITION    -> DIVISION { "+" DIVISION }
-    DIVISION    -> MULTIPLICATION { "/" MULTIPLICATION }
-    TERM -> FACTOR { "*" FACTOR }
-    FACTOR -> constant | "(" SUBTRACTION ")"
+   SUBTRACTION -> ADDITION { "-" ADDITION }
+   ADDITION    -> DIVISION { "+" DIVISION }
+   DIVISION    -> MULTIPLICATION { "/" MULTIPLICATION }
+   TERM -> FACTOR { "*" FACTOR }
+   FACTOR -> constant | "(" SUBTRACTION ")"
 */
-
 
 // Parser instances get used to do a parse of a single
 // arithmetic expression. Since instances of Lexer have a
