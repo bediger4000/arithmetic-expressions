@@ -5,21 +5,31 @@ arithmetic expression evaluator.
 
 ## Build
 
-	$ GOPATH=$PWD go build expr
-	$ GOPATH=$PWD go build eval
+    $ cd $GOPATH/src
+    $ git clone https://github.com/bediger4000/arithmetic-expressions.git
+    $ cd arithmetic-expressions
+    $ go build arithmetic-expressions
 
-`expr` parses and prints a single arithmetic expression,
-passed to `expr` as a command line arguments:
+`arithmetic-expressions` parses and prints a single arithmetic expression,
+passed to `arithmetic-expressions` as a command line arguments:
 
-    $ ./expr '1 + 3*4'
+    $ ./arithmetic-expressions '1 + 3*4'
     "1 + (3 * 4)"
+    /* 13 */
 
-`eval` does much the same as `expr`, but it also evaluates
-the successfully parsed command line string:
+With a `-g` command line flag,
+`arithmetic-expressions` prints a [GraphViz](http://graphviz.org/) `dot` format
+representation of the parse tree,
+evaluates the parse tree and prints the value.
+You would do something like this:
 
-    $ ./eval '1 + 3*4'
-    "1 + (3 * 4)"
-    13
+    $ ./arithmetic-expressions -g '1 + 3*4' > x.dot
+    $ dot -Tpng -o x.png x.dot
+    $ feh x.png
+
+You would be rewarded with a deluxe little imag:
+
+![parse tree](https://raw.githubusercontent.com/bediger4000/arithmetic-expressions/master/parse_tree.png)
 
 ## Design
 
